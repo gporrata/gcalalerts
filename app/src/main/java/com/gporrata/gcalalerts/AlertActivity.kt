@@ -117,38 +117,50 @@ class AlertActivity : ComponentActivity() {
             this, begin, end,
             DateUtils.FORMAT_SHOW_TIME or DateUtils.FORMAT_SHOW_WEEKDAY or DateUtils.FORMAT_SHOW_DATE or DateUtils.FORMAT_ABBREV_ALL
         )
-        val rel = DateUtils.getRelativeTimeSpanString(begin, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS)
+        val rel = DateUtils.getRelativeTimeSpanString(begin, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS).toString()
+        AlertContent(title, whenText, rel, location, onStop = { stop() }, onSnooze = { snooze() })
+    }
+}
 
-        Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-            Column(
-                Modifier.fillMaxSize().safeDrawingPadding().padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Spacer(Modifier.weight(1f))
-                Text("🔔 Upcoming meeting", style = MaterialTheme.typography.titleMedium)
-                Text(
-                    title, fontSize = 30.sp, fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center, lineHeight = 36.sp
-                )
-                Text(whenText, style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center)
-                Text(rel.toString(), style = MaterialTheme.typography.titleMedium)
-                if (location != null) {
-                    Text(location, style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center)
-                }
-                Spacer(Modifier.weight(1f))
-                Button(
-                    onClick = { stop() },
-                    modifier = Modifier.fillMaxWidth().height(96.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32), contentColor = Color.White)
-                ) {
-                    Text("STOP", fontSize = 32.sp, fontWeight = FontWeight.Bold)
-                }
-                OutlinedButton(onClick = { snooze() }, modifier = Modifier.fillMaxWidth().height(56.dp)) {
-                    Text("Snooze 5 min", fontSize = 18.sp)
-                }
-                Spacer(Modifier.height(24.dp))
+/** Full-screen alert UI (stateless so it can be previewed/rendered in tests). */
+@androidx.compose.runtime.Composable
+fun AlertContent(
+    title: String,
+    whenText: String,
+    relativeText: String,
+    location: String?,
+    onStop: () -> Unit,
+    onSnooze: () -> Unit,
+) {
+    Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+        Column(
+            Modifier.fillMaxSize().safeDrawingPadding().padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Spacer(Modifier.weight(1f))
+            Text("🔔 Upcoming meeting", style = MaterialTheme.typography.titleMedium)
+            Text(
+                title, fontSize = 30.sp, fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center, lineHeight = 36.sp
+            )
+            Text(whenText, style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center)
+            Text(relativeText, style = MaterialTheme.typography.titleMedium)
+            if (location != null) {
+                Text(location, style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center)
             }
+            Spacer(Modifier.weight(1f))
+            Button(
+                onClick = onStop,
+                modifier = Modifier.fillMaxWidth().height(96.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32), contentColor = Color.White)
+            ) {
+                Text("STOP", fontSize = 32.sp, fontWeight = FontWeight.Bold)
+            }
+            OutlinedButton(onClick = onSnooze, modifier = Modifier.fillMaxWidth().height(56.dp)) {
+                Text("Snooze 5 min", fontSize = 18.sp)
+            }
+            Spacer(Modifier.height(24.dp))
         }
     }
 }
