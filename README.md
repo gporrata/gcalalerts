@@ -13,9 +13,16 @@ with a selectable alert sound per meeting and per-account filtering.
 - **Upcoming meetings list** (next 7 days). Recurring events are expanded; all-day, declined and cancelled
   events are skipped. Tap a meeting to set **its own sound** (any ringtone, notification or alarm sound)
   and optionally **its own lead time**. Overrides are stored per event, so they apply to every occurrence of a recurring series.
-- **Reliable alerts:** exact alarms (`AlarmManager.setExactAndAllowWhileIdle`) plus a high-priority notification.
-  The chosen sound loops on the **alarm** audio stream for up to 60 s or until you tap **Dismiss**, open the
-  notification, or swipe it away.
+- **Reliable alerts:** exact alarms (`AlarmManager.setExactAndAllowWhileIdle`) plus a high-priority alarm notification.
+  The chosen sound loops on the **alarm** audio stream for up to 60 s or until you stop it.
+- **Stop from the lock screen, no unlock needed:**
+  - When the phone is locked or the screen is off, the screen turns on and a **full-screen alert** appears over
+    the lock screen showing the meeting title, time and location, with a big red **STOP** button (plus **Snooze 5 min**).
+    Pressing Back also stops the alert.
+  - The notification itself has **Stop** and **Snooze 5 min** buttons, visible on the lock screen. They stop the
+    sound directly without asking you to unlock.
+  - When you're using the phone, the alert appears as a heads-up notification with the same **Stop** button.
+    Tapping the notification opens the full-screen alert.
 - **Rescheduling** happens automatically on boot, app update, time/time-zone change, calendar changes
   (WorkManager content-URI trigger), every 15 minutes (periodic WorkManager job), and whenever you change settings.
 - **Test alert** (right now) and **Test in 1 min** (runs through the real alarm path, so you can lock the phone to check it).
@@ -27,6 +34,7 @@ with a selectable alert sound per meeting and per-account filtering.
 | Calendar (read) | to read your meetings |
 | Notifications (Android 13+) | to show the alert |
 | Alarms & reminders / exact alarms | granted automatically on Android 13+ (`USE_EXACT_ALARM`); on Android 12 you may need to allow it. The app shows a button if it's missing |
+| Full-screen notifications (Android 14+) | needed for the full-screen STOP screen over the lock screen. If it's off, the app shows an **Allow full-screen alerts** button that opens *Settings → Apps → gcalalerts → Full-screen notifications* (`ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT`). The notification's Stop button works either way |
 | Battery optimization exemption (optional) | the app offers a button. Recommended on phones with aggressive battery savers (Samsung, Xiaomi, etc.) |
 
 Sounds play on the alarm volume stream, so check your **alarm volume**. Do Not Disturb setups that block alarms will also silence alerts.
@@ -61,7 +69,8 @@ and replug the phone.
 2. Under **Accounts & calendars**, tick the account(s) that should give alerts (and untick any calendars you don't want).
 3. Set **Alert before meeting** (minutes) and the **Default sound**.
 4. Tap any meeting in **Upcoming meetings** to give it a different sound or lead time.
-5. Tap **Test alert** to hear it.
+5. Tap **Test alert** to hear it. To try the lock-screen flow, tap **Test in 1 min** and lock the phone.
+   When it fires, the full-screen alert appears with **STOP**.
 
 ## Tech
 

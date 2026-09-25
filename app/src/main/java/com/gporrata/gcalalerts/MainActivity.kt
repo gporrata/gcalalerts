@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.app.NotificationManager
 import android.content.pm.PackageManager
 import android.media.RingtoneManager
 import android.net.Uri
@@ -134,6 +135,9 @@ private fun notifGranted(c: Context): Boolean {
     return runtime && NotificationManagerCompat.from(c).areNotificationsEnabled()
 }
 
+private fun canFullScreen(c: Context): Boolean =
+    Build.VERSION.SDK_INT < 34 || c.getSystemService(NotificationManager::class.java).canUseFullScreenIntent()
+
 private fun ignoringBattery(c: Context) =
     c.getSystemService(PowerManager::class.java).isIgnoringBatteryOptimizations(c.packageName)
 
@@ -153,6 +157,7 @@ fun AppScreen() {
     var hasNotif by remember { mutableStateOf(notifGranted(ctx)) }
     var canExact by remember { mutableStateOf(Scheduler.canExact(ctx)) }
     var batteryOk by remember { mutableStateOf(ignoringBattery(ctx)) }
+    var fullScreenOk by remember { mutableStateOf(canFullScreen(ctx)) }
 
     var enabled by remember { mutableStateOf(Prefs.alertsEnabled(ctx)) }
     var lead by remember { mutableIntStateOf(Prefs.leadMinutes(ctx)) }
@@ -166,6 +171,7 @@ fun AppScreen() {
         hasNotif = notifGranted(ctx)
         canExact = Scheduler.canExact(ctx)
         batteryOk = ignoringBattery(ctx)
+        fullScreenOk = canFullScreen(ctx)
         refresh++
         onPauseOrDispose { }
     }
@@ -223,7 +229,7 @@ fun AppScreen() {
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             // ---- Permissions ----
-            if (!hasCal || !hasNotif || !canExact || !batteryOk) {
+            if (!hasCal || !hasNotif || !canExact || !fullScreenOk || !batteryOk) {
                 item {
                     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)) {
                         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -247,6 +253,16 @@ fun AppScreen() {
                                 Button(onClick = {
                                     ctx.startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:${ctx.packageName}")))
                                 }) { Text("Allow exact alarms") }
+                            }
+                            if (!fullScreenOk && Build.VERSION.SDK_INT >= 34) {
+                                Text("Full-screen alerts are off, so the big Stop screen won't appear over the lock screen (the notification's Stop button still works).")
+                                Button(onClick = {
+                                    try {
+                                        ctx.startActivity(Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT, Uri.parse("package:${ctx.packageName}")))
+                                    } catch (e: Exception) {
+                                        ctx.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${ctx.packageName}")))
+                                    }
+                                }) { Text("Allow full-screen alerts") }
                             }
                             if (!batteryOk) {
                                 Text("Optional: exempt from battery optimization for more reliable alerts.")

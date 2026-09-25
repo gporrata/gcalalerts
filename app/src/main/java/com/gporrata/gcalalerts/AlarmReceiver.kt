@@ -23,10 +23,18 @@ class AlarmReceiver : BroadcastReceiver() {
     }
 }
 
-/** Handles the "Dismiss" notification action / swipe-away. */
+/** Handles the "Stop" notification action / swipe-away (works from the lock screen). */
 class DismissReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val nid = intent.getIntExtra(AlertService.EXTRA_NID, 0)
         AlertService.dismiss(context, nid)
+    }
+}
+
+/** Handles the "Snooze 5 min" notification action (works from the lock screen). */
+class SnoozeReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        val nid = intent.getIntExtra(AlertService.EXTRA_NID, 0)
+        AlertService.snooze(context, intent, nid)
     }
 }

@@ -93,4 +93,18 @@ object Scheduler {
         )
         setAlarm(am, System.currentTimeMillis() + delayMs, pi, canExact(c))
     }
+
+    /** Re-fires an alert (same meeting extras) after [delayMs]. */
+    fun scheduleSnooze(c: Context, alert: Intent, delayMs: Long) {
+        val am = c.getSystemService(AlarmManager::class.java)
+        val id = alert.getLongExtra(EXTRA_EVENT_ID, -1)
+        val begin = alert.getLongExtra(EXTRA_BEGIN, 0)
+        val intent = alarmIntent(c, Uri.parse("gcalalerts://snooze/$id/$begin"))
+        alert.extras?.let { intent.putExtras(it) }
+        intent.removeExtra(AlertService.EXTRA_NID)
+        val pi = PendingIntent.getBroadcast(
+            c, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        setAlarm(am, System.currentTimeMillis() + delayMs, pi, canExact(c))
+    }
 }
