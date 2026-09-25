@@ -140,7 +140,7 @@ class AlertActivity : ComponentActivity() {
                 Button(
                     onClick = { stop() },
                     modifier = Modifier.fillMaxWidth().height(96.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F), contentColor = Color.White)
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32), contentColor = Color.White)
                 ) {
                     Text("STOP", fontSize = 32.sp, fontWeight = FontWeight.Bold)
                 }
