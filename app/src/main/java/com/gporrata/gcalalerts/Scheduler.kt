@@ -60,7 +60,7 @@ object Scheduler {
             val pi = PendingIntent.getBroadcast(
                 c, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
-            setAlarm(am, at, pi, exact)
+            setAlarm(c, am, at, pi, exact)
             keys += k.toString()
         }
         Prefs.setScheduledKeys(c, keys)
@@ -68,9 +68,21 @@ object Scheduler {
         return keys.size
     }
 
-    private fun setAlarm(am: AlarmManager, at: Long, pi: PendingIntent, exact: Boolean) {
+    /** Opened by the system when the user taps the status-bar alarm icon / "next alarm" info. */
+    private fun showIntent(c: Context): PendingIntent = PendingIntent.getActivity(
+        c, 0,
+        Intent(c, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP),
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+    )
+
+    /**
+     * Uses setAlarmClock (most reliable: exempt from Doze and battery savers, shows the status-bar alarm icon).
+     * Falls back to an inexact while-idle alarm if exact alarms aren't allowed (possible on Android 12).
+     * Cancelling uses the same broadcast PendingIntent, so AlarmManager.cancel(pi) removes either kind.
+     */
+    private fun setAlarm(c: Context, am: AlarmManager, at: Long, pi: PendingIntent, exact: Boolean) {
         try {
-            if (exact) am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
+            if (exact) am.setAlarmClock(AlarmManager.AlarmClockInfo(at, showIntent(c)), pi)
             else am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
         } catch (e: SecurityException) {
             am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
@@ -91,7 +103,7 @@ object Scheduler {
         val pi = PendingIntent.getBroadcast(
             c, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        setAlarm(am, System.currentTimeMillis() + delayMs, pi, canExact(c))
+        setAlarm(c, am, System.currentTimeMillis() + delayMs, pi, canExact(c))
     }
 
     /** Re-fires an alert (same meeting extras) after [delayMs]. */
@@ -105,6 +117,6 @@ object Scheduler {
         val pi = PendingIntent.getBroadcast(
             c, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        setAlarm(am, System.currentTimeMillis() + delayMs, pi, canExact(c))
+        setAlarm(c, am, System.currentTimeMillis() + delayMs, pi, canExact(c))
     }
 }

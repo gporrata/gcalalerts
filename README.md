@@ -13,7 +13,9 @@ with a selectable alert sound per meeting and per-account filtering.
 - **Upcoming meetings list** (next 7 days). Recurring events are expanded; all-day, declined and cancelled
   events are skipped. Tap a meeting to set **its own sound** (any ringtone, notification or alarm sound)
   and optionally **its own lead time**. Overrides are stored per event, so they apply to every occurrence of a recurring series.
-- **Reliable alerts:** exact alarms (`AlarmManager.setExactAndAllowWhileIdle`) plus a high-priority alarm notification.
+- **Reliable alerts:** alerts are scheduled as alarm clocks (`AlarmManager.setAlarmClock`), which fire on time even in Doze/battery saver,
+  plus a high-priority alarm notification. While an alert is scheduled, Android shows the **alarm-clock icon in the status bar**
+  (and your next meeting alert may appear as the "next alarm" on the lock screen/clock); tapping it opens gcalalerts.
   The chosen sound loops on the **alarm** audio stream for up to 60 s or until you stop it.
 - **Stop from the lock screen, no unlock needed:**
   - When the phone is locked or the screen is off, the screen turns on and a **full-screen alert** appears over
@@ -35,7 +37,9 @@ with a selectable alert sound per meeting and per-account filtering.
 | Notifications (Android 13+) | to show the alert |
 | Alarms & reminders / exact alarms | granted automatically on Android 13+ (`USE_EXACT_ALARM`); on Android 12 you may need to allow it. The app shows a button if it's missing |
 | Full-screen notifications (Android 14+) | needed for the full-screen STOP screen over the lock screen. If it's off, the app shows an **Allow full-screen alerts** button that opens *Settings → Apps → gcalalerts → Full-screen notifications* (`ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT`). The notification's Stop button works either way |
-| Battery optimization exemption (optional) | the app offers a button. Recommended on phones with aggressive battery savers (Samsung, Xiaomi, etc.) |
+
+**Troubleshooting (optional):** if alerts arrive late (common on Samsung/Xiaomi and other aggressive battery savers),
+use **Disable battery optimization** in the app's *Troubleshooting* section. Most phones don't need it.
 
 Sounds play on the alarm volume stream, so check your **alarm volume**. Do Not Disturb setups that block alarms will also silence alerts.
 

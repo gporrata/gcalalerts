@@ -229,7 +229,7 @@ fun AppScreen() {
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             // ---- Permissions ----
-            if (!hasCal || !hasNotif || !canExact || !fullScreenOk || !batteryOk) {
+            if (!hasCal || !hasNotif || !canExact || !fullScreenOk) {
                 item {
                     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)) {
                         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -263,16 +263,6 @@ fun AppScreen() {
                                         ctx.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${ctx.packageName}")))
                                     }
                                 }) { Text("Allow full-screen alerts") }
-                            }
-                            if (!batteryOk) {
-                                Text("Optional: exempt from battery optimization for more reliable alerts.")
-                                OutlinedButton(onClick = {
-                                    try {
-                                        ctx.startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:${ctx.packageName}")))
-                                    } catch (e: Exception) {
-                                        ctx.startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
-                                    }
-                                }) { Text("Disable battery optimization") }
                             }
                         }
                     }
@@ -403,6 +393,26 @@ fun AppScreen() {
                             style = MaterialTheme.typography.bodySmall,
                             fontWeight = if (soundOverride != null || leadOverride != null) FontWeight.Bold else FontWeight.Normal
                         )
+                    }
+                }
+            }
+            // ---- Troubleshooting (optional) ----
+            item {
+                Column(Modifier.padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text("Troubleshooting (optional)", style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        if (batteryOk) "Battery optimization is already off for gcalalerts."
+                        else "Only needed if alerts arrive late (common on Samsung/Xiaomi): exempt the app from battery optimization.",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    if (!batteryOk) {
+                        TextButton(onClick = {
+                            try {
+                                ctx.startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:${ctx.packageName}")))
+                            } catch (e: Exception) {
+                                ctx.startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+                            }
+                        }) { Text("Disable battery optimization") }
                     }
                 }
             }
